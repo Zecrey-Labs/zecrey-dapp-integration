@@ -1,3 +1,5 @@
+import BigNumber from "bignumber.js";
+
 export const transfer = async (
   transferFrom: string,
   transferTo: string,
@@ -11,7 +13,11 @@ export const transfer = async (
       {
         from: transferFrom,
         to: transferTo,
-        value: transferAmount,
+        value:
+          "0x" +
+          new BigNumber(transferAmount)
+            .times(new BigNumber(10).pow(9))
+            .toString(16),
         gasPrice: "0x2540be400",
         gas: "0x5208",
         chainId,
