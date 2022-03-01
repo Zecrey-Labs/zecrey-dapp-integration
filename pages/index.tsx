@@ -7,8 +7,7 @@ import { truncateAddress } from "../services/address.service";
 import { ConnectedSite } from "../components/ConnectedSite";
 
 const connectZecrey = async (): Promise<string | undefined> => {
-  let zecrey = (window as any).zecrey;
-  console.log(zecrey);
+  const zecrey = (window as any).zecrey;
   if (zecrey) {
     const result: string[] = await zecrey.request({
       method: "eth_requestAccounts",
@@ -40,12 +39,12 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        {isConnected ? (
+        {isConnected && address ? (
           <>
             <h3 style={{ margin: 0 }}>
               Wallet address: <code>{address && truncateAddress(address)}</code>
             </h3>
-            <ConnectedSite />
+            <ConnectedSite address={address} />
           </>
         ) : (
           <>
