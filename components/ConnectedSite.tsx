@@ -3,11 +3,27 @@ import styles from "../styles/Home.module.css";
 import { signMessage } from "../services/wallet.service";
 
 export const ConnectedSite = (props: { address: string }) => {
+  const [transferTo, setTransferTo] = useState("");
+  const [transferAmount, setTransferAmount] = useState("1");
+
   const [shortText, setShortText] = useState("");
   const [lastSig, setLastSig] = useState<string>("");
   const [transactionStatus, setTransactionStatus] = useState<
     "idle" | "approve" | "pending" | "success"
   >("idle");
+
+  const buttonsDisabled = ["approve", "pending"].includes(transactionStatus);
+
+  const handleTransferSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      setTransactionStatus("approve");
+      setTransactionStatus("pending");
+    } catch (e) {
+      console.error(e);
+      setTransactionStatus("idle");
+    }
+  };
 
   const handleSignSubmit = async (e: React.FormEvent) => {
     try {
@@ -24,6 +40,29 @@ export const ConnectedSite = (props: { address: string }) => {
 
   return (
     <>
+      <div className="columns">
+        <form onSubmit={handleTransferSubmit}>
+          <h2 className={styles.title}>Transfer token</h2>
+          <label htmlFor="transfer-to">To</label>
+          <input
+            type="text"
+            id="transfer-to"
+            name="fname"
+            value={transferTo}
+            onChange={(e) => setTransferTo(e.target.value)}
+          />
+          <label htmlFor="transfer-amount">Amount</label>
+          <input
+            type="text"
+            id="transfer-amount"
+            name="fname"
+            value={transferAmount}
+            onChange={(e) => setTransferAmount(e.target.value)}
+          />
+          <br />
+          <input type="submit" disabled={buttonsDisabled} value="Transfer" />
+        </form>
+      </div>
       <div className="columns">
         <form onSubmit={handleSignSubmit}>
           <h2 className={styles.title}>Sign Message</h2>
