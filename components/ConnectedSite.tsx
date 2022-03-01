@@ -1,10 +1,12 @@
 import { FC, useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
 import { signMessage } from "../services/wallet.service";
+import { transfer } from "../services/token.service";
 
 export const ConnectedSite = (props: { address: string }) => {
   const [transferTo, setTransferTo] = useState("");
   const [transferAmount, setTransferAmount] = useState("1");
+  const [lastTransactionHash, setLastTransactionHash] = useState("");
 
   const [shortText, setShortText] = useState("");
   const [lastSig, setLastSig] = useState<string>("");
@@ -18,6 +20,13 @@ export const ConnectedSite = (props: { address: string }) => {
     try {
       e.preventDefault();
       setTransactionStatus("approve");
+      const txHash = await transfer(
+        props.address,
+        transferTo,
+        transferAmount,
+        4
+      );
+      setLastTransactionHash(txHash);
       setTransactionStatus("pending");
     } catch (e) {
       console.error(e);
