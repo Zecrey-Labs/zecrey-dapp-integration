@@ -1,9 +1,36 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import type { NextPage } from "next";
+import Head from "next/head";
+import Image from "next/image";
+import styles from "../styles/Home.module.css";
+import { useEffect, useState } from "react";
+import { truncateAddress } from "../services/address.service";
+import { ConnectedSite } from "../components/ConnectedSite";
+
+const connectZecrey = async (): Promise<string | undefined> => {
+  let zecrey = (window as any).zecrey;
+  console.log(zecrey);
+  if (zecrey) {
+    const result: string[] = await zecrey.request({
+      method: "eth_requestAccounts",
+    });
+    return result[0];
+  } else {
+    window.open(
+      "https://chrome.google.com/webstore/detail/zecrey/ojbpcbinjmochkhelkflddfnmcceomdi"
+    );
+  }
+};
 
 const Home: NextPage = () => {
+  const [isConnected, setIsConnected] = useState(false);
+  const [address, setAddress] = useState<string>();
+
+  const handleConnectClick = async () => {
+    const address = await connectZecrey();
+    setIsConnected(true);
+    setAddress(address);
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -13,7 +40,21 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        main
+        {isConnected ? (
+          <>
+            <h3 style={{ margin: 0 }}>
+              Wallet address: <code>{address && truncateAddress(address)}</code>
+            </h3>
+            <ConnectedSite />
+          </>
+        ) : (
+          <>
+            <button className={styles.connect} onClick={handleConnectClick}>
+              Connect Wallet
+            </button>
+            <p>First connect wallet to use dapp.</p>
+          </>
+        )}
       </main>
 
       <footer className={styles.footer}>
@@ -22,14 +63,14 @@ const Home: NextPage = () => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by {' '}
+          Powered by{" "}
           <span className={styles.logo}>
             <Image src="/zecrey.png" alt="zecrey Logo" width={16} height={16} />
           </span>
         </a>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
