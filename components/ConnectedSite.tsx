@@ -7,7 +7,6 @@ export const ConnectedSite = (props: { address: string }) => {
   const [transferTo, setTransferTo] = useState("");
   const [transferAmount, setTransferAmount] = useState("1");
   const [depositAmount, setDepositAmount] = useState("1");
-  const [lastTransactionHash, setLastTransactionHash] = useState("");
 
   const [shortText, setShortText] = useState("");
   const [lastSig, setLastSig] = useState<string>("");
@@ -15,7 +14,7 @@ export const ConnectedSite = (props: { address: string }) => {
     "idle" | "approve" | "pending" | "success"
   >("idle");
 
-  const buttonsDisabled = ["approve", "pending"].includes(transactionStatus);
+  const buttonsDisabled = ["approve"].includes(transactionStatus);
 
   const handleDepositSubmit = async (e: React.FormEvent) => {
     try {
@@ -34,7 +33,6 @@ export const ConnectedSite = (props: { address: string }) => {
       e.preventDefault();
       setTransactionStatus("approve");
       const txHash = await transfer(props.address, transferTo, transferAmount);
-      setLastTransactionHash(txHash);
       setTransactionStatus("pending");
     } catch (e) {
       console.error(e);
