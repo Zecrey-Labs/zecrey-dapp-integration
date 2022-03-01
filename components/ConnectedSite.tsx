@@ -67,7 +67,11 @@ export const ConnectedSite = (props: { address: string }) => {
             onChange={(e) => setDepositAmount(e.target.value)}
           />
           <br />
-          <input type="submit" disabled={buttonsDisabled} value="Deposit" />
+          <input
+            type="submit"
+            disabled={buttonsDisabled}
+            value={transactionStatus === "approve" ? "Deposit..." : "Deposit"}
+          />
         </form>
         <form onSubmit={handleTransferSubmit}>
           <h2 className={styles.title}>Transfer token</h2>
@@ -88,7 +92,11 @@ export const ConnectedSite = (props: { address: string }) => {
             onChange={(e) => setTransferAmount(e.target.value)}
           />
           <br />
-          <input type="submit" disabled={buttonsDisabled} value="Transfer" />
+          <input
+            type="submit"
+            disabled={buttonsDisabled}
+            value={transactionStatus === "approve" ? "Transfer..." : "Transfer"}
+          />
         </form>
       </div>
       <div className="columns">
