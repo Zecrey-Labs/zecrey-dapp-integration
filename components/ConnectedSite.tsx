@@ -1,11 +1,12 @@
 import { FC, useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
 import { signMessage } from "../services/wallet.service";
-import { transfer } from "../services/token.service";
+import { deposit, transfer } from "../services/token.service";
 
 export const ConnectedSite = (props: { address: string }) => {
   const [transferTo, setTransferTo] = useState("");
   const [transferAmount, setTransferAmount] = useState("1");
+  const [depositAmount, setDepositAmount] = useState("1");
   const [lastTransactionHash, setLastTransactionHash] = useState("");
 
   const [shortText, setShortText] = useState("");
@@ -16,16 +17,23 @@ export const ConnectedSite = (props: { address: string }) => {
 
   const buttonsDisabled = ["approve", "pending"].includes(transactionStatus);
 
+  const handleDepositSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      setTransactionStatus("approve");
+      const txHash = await deposit(props.address, depositAmount);
+      setTransactionStatus("pending");
+    } catch (e) {
+      console.error(e);
+      setTransactionStatus("idle");
+    }
+  };
+
   const handleTransferSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
       setTransactionStatus("approve");
-      const txHash = await transfer(
-        props.address,
-        transferTo,
-        transferAmount,
-        4
-      );
+      const txHash = await transfer(props.address, transferTo, transferAmount);
       setLastTransactionHash(txHash);
       setTransactionStatus("pending");
     } catch (e) {
@@ -50,6 +58,19 @@ export const ConnectedSite = (props: { address: string }) => {
   return (
     <>
       <div className="columns">
+        <form onSubmit={handleDepositSubmit}>
+          <h2 className={styles.title}>Deposit</h2>
+          <label htmlFor="deposit-amount">Amount(Gwei)</label>
+          <input
+            type="text"
+            id="deposit-amount"
+            name="fname"
+            value={depositAmount}
+            onChange={(e) => setDepositAmount(e.target.value)}
+          />
+          <br />
+          <input type="submit" disabled={buttonsDisabled} value="Deposit" />
+        </form>
         <form onSubmit={handleTransferSubmit}>
           <h2 className={styles.title}>Transfer token</h2>
           <label htmlFor="transfer-to">To</label>
