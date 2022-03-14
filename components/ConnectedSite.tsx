@@ -162,7 +162,7 @@ export const ConnectedSite = (props: { address: string }) => {
             value={transferTo2}
             onChange={(e) => setTransferTo2(e.target.value)}
           />
-          <label htmlFor="transfer-amount">Amount(Gwei)</label>
+          <label htmlFor="transfer-amount">Amount</label>
           <input
             type="text"
             id="transfer-amount"
