@@ -54,7 +54,6 @@ export const ConnectedSite = (props: { address: string }) => {
     try {
       e.preventDefault();
       setTransactionStatus("approve");
-      debugger;
       const txHash = await transferERC20Token(
         props.address,
         transferTo2,
