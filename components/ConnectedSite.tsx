@@ -1,11 +1,17 @@
 import { FC, useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
 import { signMessage } from "../services/wallet.service";
-import { deposit, transfer } from "../services/token.service";
+import {
+  deposit,
+  transferETH,
+  transferERC20Token,
+} from "../services/token.service";
 
 export const ConnectedSite = (props: { address: string }) => {
   const [transferTo, setTransferTo] = useState("");
+  const [transferTo2, setTransferTo2] = useState("");
   const [transferAmount, setTransferAmount] = useState("1");
+  const [transferAmount2, setTransferAmount2] = useState("1");
   const [depositAmount, setDepositAmount] = useState("1");
 
   const [shortText, setShortText] = useState("");
@@ -32,7 +38,28 @@ export const ConnectedSite = (props: { address: string }) => {
     try {
       e.preventDefault();
       setTransactionStatus("approve");
-      const txHash = await transfer(props.address, transferTo, transferAmount);
+      const txHash = await transferETH(
+        props.address,
+        transferTo,
+        transferAmount
+      );
+      setTransactionStatus("pending");
+    } catch (e) {
+      console.error(e);
+      setTransactionStatus("idle");
+    }
+  };
+
+  const handleTransferERC20TokenSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      setTransactionStatus("approve");
+      debugger;
+      const txHash = await transferERC20Token(
+        props.address,
+        transferTo2,
+        transferAmount2
+      );
       setTransactionStatus("pending");
     } catch (e) {
       console.error(e);
@@ -74,7 +101,7 @@ export const ConnectedSite = (props: { address: string }) => {
           />
         </form>
         <form onSubmit={handleTransferSubmit}>
-          <h2 className={styles.title}>Transfer token</h2>
+          <h2 className={styles.title}>Transfer ETH</h2>
           <label htmlFor="transfer-to">To</label>
           <input
             type="text"
@@ -121,6 +148,33 @@ export const ConnectedSite = (props: { address: string }) => {
             name="r"
             value={lastSig}
             readOnly
+          />
+        </form>
+      </div>
+      <div className="columns">
+        <form onSubmit={handleTransferERC20TokenSubmit}>
+          <h2 className={styles.title}>Transfer ERC20 Token(ZRY)</h2>
+          <label htmlFor="transfer-to">To</label>
+          <input
+            type="text"
+            id="transfer-to"
+            name="fname"
+            value={transferTo2}
+            onChange={(e) => setTransferTo2(e.target.value)}
+          />
+          <label htmlFor="transfer-amount">Amount(Gwei)</label>
+          <input
+            type="text"
+            id="transfer-amount"
+            name="fname"
+            value={transferAmount2}
+            onChange={(e) => setTransferAmount2(e.target.value)}
+          />
+          <br />
+          <input
+            type="submit"
+            disabled={buttonsDisabled}
+            value={transactionStatus === "approve" ? "Transfer..." : "Transfer"}
           />
         </form>
       </div>
