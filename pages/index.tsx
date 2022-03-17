@@ -2,15 +2,16 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { truncateAddress } from "../services/address.service";
 import { ConnectedSite } from "../components/ConnectedSite";
+import { useRouter } from "next/router";
 
-const connectZecrey = async (): Promise<string | undefined> => {
+const connectZecrey = async (isNear?: boolean): Promise<string | undefined> => {
   const zecrey = (window as any).zecrey;
   if (zecrey) {
     const result: string[] = await zecrey.request({
-      method: "eth_requestAccounts",
+      method: isNear ? "near_requestAccounts" : "eth_requestAccounts",
     });
     return result[0];
   } else {
@@ -23,6 +24,7 @@ const connectZecrey = async (): Promise<string | undefined> => {
 const Home: NextPage = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState<string>();
+  const router = useRouter();
 
   const handleConnectClick = async () => {
     const address = await connectZecrey();
@@ -49,7 +51,16 @@ const Home: NextPage = () => {
         ) : (
           <>
             <button className={styles.connect} onClick={handleConnectClick}>
-              Connect Wallet
+              Connect Wallet - EVM
+            </button>
+            <button
+              className={styles.connect}
+              onClick={async () => {
+                let accountId = await connectZecrey(true);
+                if (accountId) router.push(`/near/${accountId}`);
+              }}
+            >
+              Connect Wallet - Near
             </button>
             <p>First connect wallet to use dapp.</p>
           </>
