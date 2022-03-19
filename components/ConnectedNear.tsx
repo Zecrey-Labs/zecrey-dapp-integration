@@ -2,7 +2,8 @@ import { utils } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { FormEvent, useMemo, useState } from "react";
 import styles from "../styles/Home.module.css";
-import { BN } from "bn.js";
+import * as nearAPI from "near-api-js";
+import BigNumber from "bignumber.js";
 
 const ConnectedNear = (props: { accountId: string }) => {
   return (
@@ -109,8 +110,22 @@ const TransferFT = (props: { sender: string }) => {
     return !contract || !to || !value || !isNearAccountId(to) || loading;
   }, [contract, to, value, loading]);
 
+  let network: "testnet" | "mainnet" = useMemo(() => {
+    if (contract && contract.endsWith(".near")) {
+      return "mainnet";
+    } else {
+      return "testnet";
+    }
+  }, [contract]);
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    let { decimals } = await nearReadStateWithoutAccount(
+      network,
+      contract,
+      "ft_metadata",
+      ""
+    );
     const zecrey = (window as any).zecrey;
     if (zecrey) {
       try {
@@ -123,16 +138,18 @@ const TransferFT = (props: { sender: string }) => {
             action: "functionCall",
             args: [
               "ft_transfer",
-              Buffer.from(JSON.stringify({
+              {
                 receiver_id: to,
-                amount: parseUnits(value, 24).toString(),
-              })),
-              new BN("300000000000000"),
-              new BN("1")
+                amount: new BigNumber(value)
+                  .times(new BigNumber(10).pow(decimals))
+                  .toFixed(),
+              },
+              "300000000000000",
+              "1",
             ],
           },
         });
-        console.log("val", val);
+        console.log("tx hash: ", val);
       } catch (err) {
         console.log(err);
       } finally {
@@ -172,4 +189,32 @@ const TransferFT = (props: { sender: string }) => {
       />
     </form>
   );
+};
+
+/**
+ *
+ * @param network
+ * @param contractName
+ * @param methodName
+ * @param args
+ * @returns
+ */
+export const nearReadStateWithoutAccount = async (
+  network: "testnet" | "mainnet",
+  contractName: string,
+  methodName: string,
+  args: any
+) => {
+  const provider = new nearAPI.providers.JsonRpcProvider(
+    `https://rpc.${network}.near.org`
+  );
+  const args_base64 = args ? btoa(JSON.stringify(args)) : "";
+  const raw = await provider.query({
+    request_type: "call_function",
+    account_id: contractName,
+    method_name: methodName,
+    args_base64,
+    finality: "optimistic",
+  });
+  return JSON.parse(Buffer.from((raw as any).result).toString());
 };
