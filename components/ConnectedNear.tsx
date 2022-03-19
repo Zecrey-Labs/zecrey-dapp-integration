@@ -2,6 +2,7 @@ import { utils } from "ethers";
 import { parseUnits } from "ethers/lib/utils";
 import { FormEvent, useMemo, useState } from "react";
 import styles from "../styles/Home.module.css";
+import { BN } from "bn.js";
 
 const ConnectedNear = (props: { accountId: string }) => {
   return (
@@ -119,15 +120,15 @@ const TransferFT = (props: { sender: string }) => {
           params: {
             sender: props.sender,
             receiver: contract,
-            action: "functionalCall",
+            action: "functionCall",
             args: [
               "ft_transfer",
-              {
+              Buffer.from(JSON.stringify({
                 receiver_id: to,
                 amount: parseUnits(value, 24).toString(),
-              },
-              parseUnits("4.5", 20).toString(),
-              "0",
+              })),
+              new BN("300000000000000"),
+              new BN("1")
             ],
           },
         });
