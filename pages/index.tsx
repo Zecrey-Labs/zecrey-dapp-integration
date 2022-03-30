@@ -7,11 +7,28 @@ import { truncateAddress } from "../services/address.service";
 import { ConnectedSite } from "../components/ConnectedSite";
 import { useRouter } from "next/router";
 
-const connectZecrey = async (isNear?: boolean): Promise<string | undefined> => {
+const connectZecrey = async (
+  type: "evm" | "near" | "l2"
+): Promise<string | undefined> => {
   const zecrey = (window as any).zecrey;
+  let method;
+  switch (type) {
+    case "evm":
+      method = "eth_requestAccounts";
+      break;
+    case "near":
+      method = "near_requestAccounts";
+      break;
+    case "l2":
+      method = "zecrey_requestAccounts";
+      break;
+    default:
+      break;
+  }
+  if (!method) return;
   if (zecrey) {
     const result: string[] = await zecrey.request({
-      method: isNear ? "near_requestAccounts" : "eth_requestAccounts",
+      method,
     });
     return result[0];
   } else {
@@ -27,7 +44,7 @@ const Home: NextPage = () => {
   const router = useRouter();
 
   const handleConnectClick = async () => {
-    const address = await connectZecrey();
+    const address = await connectZecrey("evm");
     setIsConnected(true);
     setAddress(address);
   };
@@ -56,11 +73,20 @@ const Home: NextPage = () => {
             <button
               className={styles.connect}
               onClick={async () => {
-                let accountId = await connectZecrey(true);
+                let accountId = await connectZecrey("near");
                 if (accountId) router.push(`/near/${accountId}`);
               }}
             >
               Connect Wallet - Near
+            </button>
+            <button
+              className={styles.connect}
+              onClick={async () => {
+                let accountName = await connectZecrey("l2");
+                if (accountName) router.push(`/l2/${accountName}`);
+              }}
+            >
+              Connect Wallet - L2
             </button>
             <p>First connect wallet to use dapp.</p>
           </>
