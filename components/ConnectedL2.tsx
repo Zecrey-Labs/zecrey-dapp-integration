@@ -38,6 +38,10 @@ const ConnectedL2 = (props: { accountName: string }) => {
             accountName={props.accountName}
             accountIndex={accountIndex}
           />
+          <RemoveLiquidity
+            accountName={props.accountName}
+            accountIndex={accountIndex}
+          />
         </div>
       </main>
     </div>
@@ -307,6 +311,71 @@ const AddLiquidity = (props: { accountName: string; accountIndex: number }) => {
         type="submit"
         disabled={disabled}
         value={loading ? "Add..." : "Add Liquidity"}
+      />
+    </form>
+  );
+};
+
+const RemoveLiquidity = (props: {
+  accountName: string;
+  accountIndex: number;
+}) => {
+  const [value, setValue] = useState("0.1");
+  const [loading, setLoading] = useState(false);
+  const disabled = useMemo(() => {
+    return !value || loading;
+  }, [value, loading]);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    const zecrey = (window as any).zecrey;
+    if (zecrey) {
+      try {
+        setLoading(true);
+        let val = await zecrey.request({
+          method: "zecrey_L2_sendTransaction",
+          params: {
+            action: 7, // remove liquidity
+            from: props.accountName, // zecrey account name
+            gasFeeAssetId: 0,
+            args: {
+              pairIndex: 0,
+              removeAmount: "0.0001",
+              slippage: 0.1, // percentage, 0.1 here means 0.1%
+            },
+          },
+        });
+        console.log(val);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      window.open(
+        "https://chrome.google.com/webstore/detail/zecrey/ojbpcbinjmochkhelkflddfnmcceomdi"
+      );
+    }
+  };
+
+  return (
+    <form onSubmit={submit}>
+      <h2 className={styles.title}>Remove Liquidity</h2>
+      <label>Remove Amount:</label>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+        }}
+      />
+      <br />
+      <p>Asset pay for gas: REY</p>
+      <p>Slippage is 0.1%</p>
+      <input
+        type="submit"
+        disabled={disabled}
+        value={loading ? "Remove..." : "Remove Liquidity"}
       />
     </form>
   );
