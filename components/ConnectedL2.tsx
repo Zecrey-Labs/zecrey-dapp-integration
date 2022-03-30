@@ -43,6 +43,9 @@ const ConnectedL2 = (props: { accountName: string }) => {
             accountIndex={accountIndex}
           />
         </div>
+        <div className="columns">
+          <Swap accountName={props.accountName} accountIndex={accountIndex} />
+        </div>
       </main>
     </div>
   );
@@ -376,6 +379,70 @@ const RemoveLiquidity = (props: {
         type="submit"
         disabled={disabled}
         value={loading ? "Remove..." : "Remove Liquidity"}
+      />
+    </form>
+  );
+};
+
+const Swap = (props: { accountName: string; accountIndex: number }) => {
+  const [value, setValue] = useState("0.1");
+  const [loading, setLoading] = useState(false);
+  const disabled = useMemo(() => {
+    return !value || loading;
+  }, [value, loading]);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    const zecrey = (window as any).zecrey;
+    if (zecrey) {
+      try {
+        setLoading(true);
+        let val = await zecrey.request({
+          method: "zecrey_L2_sendTransaction",
+          params: {
+            action: 5, // swap
+            from: props.accountName, // zecrey account name
+            gasFeeAssetId: 0,
+            args: {
+              pairIndex: 0,
+              swapFromAssetId: 0,
+              swapFromAmount: 0.01,
+              swapToAssetId: 1,
+              swapToAmount: 0.0003,
+              min: 3, // without decimal places
+            },
+          },
+        });
+        console.log(val);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      window.open(
+        "https://chrome.google.com/webstore/detail/zecrey/ojbpcbinjmochkhelkflddfnmcceomdi"
+      );
+    }
+  };
+
+  return (
+    <form onSubmit={submit}>
+      <h2 className={styles.title}>Swap</h2>
+      <label>Remove Amount:</label>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+        }}
+      />
+      <br />
+      <p>Asset pay for gas: REY</p>
+      <input
+        type="submit"
+        disabled={disabled}
+        value={loading ? "Swap..." : "Swap Liquidity"}
       />
     </form>
   );
