@@ -1,7 +1,28 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import styles from "../styles/Home.module.css";
+import {
+  getAccountIndexByName,
+  getLpByAccount,
+  getPairRatio,
+} from "@zecrey/zecrey-client-core";
 
 const ConnectedL2 = (props: { accountName: string }) => {
+  const [accountIndex, setAccountIndex] = useState(0);
+
+  useEffect(() => {
+    let _isMounted = true;
+    getAccountIndexByName(props.accountName)
+      .then((res) => {
+        if (_isMounted) setAccountIndex(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    return () => {
+      _isMounted = false;
+    };
+  }, [props.accountName]);
+
   return (
     <div className={styles.container}>
       <main className={styles.main}>
@@ -11,6 +32,12 @@ const ConnectedL2 = (props: { accountName: string }) => {
         <div className="columns">
           <Transfer accountName={props.accountName} />
           <Withdraw accountName={props.accountName} />
+        </div>
+        <div className="columns">
+          <AddLiquidity
+            accountName={props.accountName}
+            accountIndex={accountIndex}
+          />
         </div>
       </main>
     </div>
@@ -210,6 +237,76 @@ const Withdraw = (props: { accountName: string }) => {
         type="submit"
         disabled={disabled}
         value={loading ? "Unlock..." : "Unlock"}
+      />
+    </form>
+  );
+};
+
+const AddLiquidity = (props: { accountName: string; accountIndex: number }) => {
+  const [value1, setValue1] = useState("0.1");
+  const [value2, setValue2] = useState("0.0039");
+  const [loading, setLoading] = useState(false);
+  const disabled = useMemo(() => {
+    return !value1 || !value2 || loading;
+  }, [value1, value2, loading]);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    const zecrey = (window as any).zecrey;
+    if (zecrey) {
+      try {
+        setLoading(true);
+        let val = await zecrey.request({
+          method: "zecrey_L2_sendTransaction",
+          params: {
+            action: 6, // add liquidity
+            from: props.accountName, // zecrey account name
+            gasFeeAssetId: 0,
+            args: {
+              pairIndex: 0,
+              asset1Amount: "0.1",
+              asset2Amount: "0.0039",
+            },
+          },
+        });
+        console.log(val);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      window.open(
+        "https://chrome.google.com/webstore/detail/zecrey/ojbpcbinjmochkhelkflddfnmcceomdi"
+      );
+    }
+  };
+
+  return (
+    <form onSubmit={submit}>
+      <h2 className={styles.title}>Add Liquidity</h2>
+      <label>Amount of REY:</label>
+      <input
+        type="number"
+        value={value1}
+        onChange={(e) => {
+          setValue1(e.target.value);
+        }}
+      />
+      <label>Amount of ETH:</label>
+      <input
+        type="number"
+        value={value2}
+        onChange={(e) => {
+          setValue2(e.target.value);
+        }}
+      />
+      <br />
+      <p>Asset pay for gas: REY</p>
+      <input
+        type="submit"
+        disabled={disabled}
+        value={loading ? "Add..." : "Add Liquidity"}
       />
     </form>
   );
