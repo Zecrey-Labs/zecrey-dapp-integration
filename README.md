@@ -1,34 +1,159 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Zecrey Dapp Request Document
 
-## Getting Started
+## 1. Connect wallet and get the account address
 
-First, run the development server:
+### EVM
 
-```bash
-npm run dev
-# or
-yarn dev
+```typescript
+const { zecrey } = window; // global window in browser
+
+if (zecrey) {
+  const accounts: string[] = await zecrey.request({
+    method: "eth_requestAccounts",
+  });
+  return accounts[0];
+} else {
+  alert("Please install Zecrey.");
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### NEAR
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```typescript
+const { zecrey } = window; // global window in browser
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+if (zecrey) {
+  const accounts: string[] = await zecrey.request({
+    method: "near_requestAccounts",
+  });
+  return accounts[0];
+} else {
+  alert("Please install Zecrey.");
+}
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+### Zecrey L2
 
-## Learn More
+```typescript
+const { zecrey } = window; // global window in browser
 
-To learn more about Next.js, take a look at the following resources:
+if (zecrey) {
+  const accounts: string[] = await zecrey.request({
+    method: "zecrey_requestAccounts",
+  });
+  return accounts[0];
+} else {
+  alert("Please install Zecrey.");
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 2. Transfer native token on L1
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### EVM
 
-## Deploy on Vercel
+```typescript
+const { zecrey } = window; // global window in browser
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+const transactionParameters = {
+  from: selectedAddress,
+  to: "0x0000000000000000000000000000000000000000",
+  value: "0x2540be400",
+  gasPrice: "0x09184e72a000",
+  gas: "0x2710",
+  chainId: "0x4",
+};
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+const txHash = await zecrey.request({
+  method: "eth_sendTransaction",
+  params: [transactionParameters],
+});
+```
+
+### NEAR
+
+```typescript
+const { zecrey } = window; // global window in browser
+
+const transactionParameters = {
+  sender: nearAccountId,
+  receiver: "example.testnet",
+  action: "transfer",
+  args: ["0x2540be400"],
+};
+
+const txHash = await zecrey.request({
+  method: "near_sendTransaction",
+  params: transactionParameters,
+});
+```
+
+## 3. Call method of a smart contract on L1
+
+### EVM
+
+```typescript
+const { zecrey } = window; // global window in browser
+
+// Interact with an ERC20 contract to transfer some token.
+const transactionParameters = {
+  from: selectedAddress,
+  to: contractAddress,
+  value: "",
+  data: "0x7f7465737432000000000000000000000000000000000000000000000000000000600057",
+  gasPrice: "0x09184e72a000",
+  gas: "0x2540be4",
+  chainId: "0x4",
+};
+
+const txHash = await zecrey.request({
+  method: "eth_sendTransaction",
+  params: [transactionParameters],
+});
+```
+
+### NEAR
+
+```typescript
+const { zecrey } = window; // global window in browser
+
+// Interact with an FT contract to transfer some token.
+const transactionParameters = {
+  sender: nearAccountId,
+  receiver: contract,
+  action: "functionCall",
+  args: [
+    "ft_transfer",
+    {
+      receiver_id: "example.testnet",
+      amount: "0x2540be400000000",
+    },
+    "300000000000000", // gas
+    "1", // deposit
+  ],
+};
+
+const txHash = await zecrey.request({
+  method: "near_sendTransaction",
+  params: transactionParameters,
+});
+```
+
+## 4. Send Zecrey L2 transactions
+
+```typescript
+const { zecrey } = window; // global window in browser
+
+const txHash = await await zecrey.request({
+  method: "zecrey_L2_sendTransaction",
+  params: {
+    action: 4, // transfer
+    from: zecreyAccountName, // zecrey account name
+    gasFeeAssetId: 0,
+    args: {
+      assetId: 0,
+      payees: [{ address: "example.zecrey", amount: "10.0" }],
+      memo: "",
+    },
+  },
+});
+```
