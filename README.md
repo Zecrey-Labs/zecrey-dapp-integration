@@ -143,7 +143,7 @@ const txHash = await zecrey.request({
 ```typescript
 const { zecrey } = window; // global window in browser
 
-const txHash = await await zecrey.request({
+const txHash = await zecrey.request({
   method: "zecrey_L2_sendTransaction",
   params: {
     action: 4, // transfer
