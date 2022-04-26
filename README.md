@@ -54,6 +54,17 @@ if (zecrey) {
 ```typescript
 const { zecrey } = window; // global window in browser
 
+// Switch chain.
+zecrey
+  .request({
+    method: "wallet_switchEthereumChain",
+    params: [{ chainId: "0x4" }],
+  })
+  .then(console.log);
+
+// Check current chain ID
+const chainId = await zecrey.send("eth_chainId");
+
 const transactionParameters = {
   from: selectedAddress,
   to: "0x0000000000000000000000000000000000000000",
@@ -93,6 +104,17 @@ const txHash = await zecrey.request({
 
 ```typescript
 const { zecrey } = window; // global window in browser
+
+// Switch chain.
+zecrey
+  .request({
+    method: "wallet_switchEthereumChain",
+    params: [{ chainId: "0x4" }],
+  })
+  .then(console.log);
+
+// Check current chain ID
+const chainId = await zecrey.send("eth_chainId");
 
 // Interact with an ERC20 contract to transfer some token.
 const transactionParameters = {
