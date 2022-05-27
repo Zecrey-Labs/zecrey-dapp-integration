@@ -179,3 +179,19 @@ const txHash = await zecrey.request({
   },
 });
 ```
+
+## 5. Sign message
+
+### EVM
+
+```typescript
+const { zecrey } = window; // global window in browser
+
+const from = '0xD9ec5DAABd83dD452445f4bCA909aaeA335A9F38';
+const message = 'hello world';
+const signed = await zecrey.request({
+  methode: 'eth_sign',
+  params: [from, message],
+  from
+}) // 0x4734cbab803486d493073000edf7fa71e5778591f08eb02b8f7ae60ac1e1c64c725671ec88183c4d8db486255699265a7b77a3964571214608da0db716b52c7a1c
+```
